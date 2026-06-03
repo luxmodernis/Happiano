@@ -170,6 +170,8 @@ body{
   overflow:hidden;
   opacity:0;pointer-events:none;transition:opacity .65s;cursor:none;
 }
+/* Curseur rose sur les écrans de résultat */
+#ball.result{background:var(--pink);width:26px;height:26px;}
 #reward.on{opacity:1;pointer-events:all;}
 
 /* ── Panneau 1 : titre seul, centré ── */
@@ -181,7 +183,7 @@ body{
 #reward.on.phase2 .rw-p1{transform:translateY(-100%);}
 
 .rw-title{
-  font-size:clamp(2.7rem,8.25vw,5.6rem);font-weight:900;
+  font-size:clamp(3.4rem,10vw,7rem);font-weight:900;
   text-transform:uppercase;letter-spacing:-.048em;line-height:.84;
   text-align:center;
   opacity:0;transform:translateY(28px);
@@ -209,7 +211,7 @@ body{
 #reward.on.phase2 .rw-gif{opacity:1;transform:none;}
 
 .rw-score{
-  font-size:clamp(2.2rem,6vw,3.2rem);font-weight:900;letter-spacing:-.04em;
+  font-size:clamp(3rem,8vw,4.5rem);font-weight:900;letter-spacing:-.04em;
   margin-bottom:.4rem;
   opacity:0;transform:translateY(14px);
   transition:opacity .45s .22s, transform .45s .22s;
@@ -217,8 +219,8 @@ body{
 #reward.on.phase2 .rw-score{opacity:1;transform:none;}
 
 .rw-msg{
-  font-size:.58rem;font-weight:400;letter-spacing:.22em;text-transform:uppercase;
-  color:rgba(17,17,17,.4);max-width:300px;line-height:1.9;
+  font-size:.72rem;font-weight:400;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(17,17,17,.4);max-width:360px;line-height:1.9;
   margin-bottom:1.1rem;
   opacity:0;transform:translateY(10px);
   transition:opacity .45s .34s, transform .45s .34s;
@@ -226,8 +228,8 @@ body{
 #reward.on.phase2 .rw-msg{opacity:1;transform:none;}
 
 .rw-team{
-  font-size:.48rem;letter-spacing:.22em;text-transform:uppercase;
-  color:rgba(17,17,17,.28);max-width:340px;line-height:2;
+  font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(17,17,17,.28);max-width:380px;line-height:2;
   margin-bottom:1.6rem;
   opacity:0;
   transition:opacity .45s .46s;
@@ -321,6 +323,7 @@ body{
   <div class="btns">
     <button class="pill" id="bdemo" onclick="playDemo()"></button>
     <button class="pill" onclick="resetAll()" id="uiBtnReset"></button>
+    <button class="pill" onclick="cheatEnd()" style="opacity:.35;font-size:.55rem">Test résultat</button>
   </div>
   <div class="kbhint">
     Blanches : Q &nbsp;S &nbsp;D &nbsp;F &nbsp;G &nbsp;H &nbsp;J &nbsp;K &nbsp;L &nbsp;M<br>
@@ -380,7 +383,10 @@ document.addEventListener('mousemove', e => {
   mx = e.clientX; my = e.clientY;
   const hit = document.elementFromPoint(mx, my);
   const onP = hit && (hit.classList.contains('kw') || hit.classList.contains('kb') || hit.closest?.('.piano-wrap'));
-  ball.classList.toggle('keys', !!onP);
+  const onR = document.getElementById('reward').classList.contains('on')
+           || document.getElementById('reveal').classList.contains('on');
+  ball.classList.toggle('keys',   !!onP && !onR);
+  ball.classList.toggle('result', !!onR);
 });
 document.addEventListener('mousedown', () => ball.classList.add('click'));
 document.addEventListener('mouseup',   () => ball.classList.remove('click'));
@@ -612,6 +618,13 @@ function chk(id) {
     shakeBar();
     // Guide stays on MEL[si] — no advance
   }
+}
+
+function cheatEnd() {
+  si = MEL.length;
+  nCorrect = 25;
+  nWrong = Math.floor(Math.random() * 32); // score aléatoire 0–100%
+  showEnd();
 }
 
 function resetAll() {
