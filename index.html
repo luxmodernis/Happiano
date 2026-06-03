@@ -623,12 +623,8 @@ function showEnd() {
   const msg = getMsg(s);
 
   const gif = document.getElementById('rwGif');
-  if (s > 80) {
-    gif.src = GIFS[Math.floor(Math.random() * GIFS.length)];
-    gif.style.display = 'block';
-  } else {
-    gif.style.display = 'none';
-  }
+  gif.src          = GIFS[Math.floor(Math.random() * GIFS.length)];
+  gif.style.display = 'block';
   document.getElementById('rwScore').textContent = s + '%';
   document.getElementById('rwMsg').textContent   = msg;
 
