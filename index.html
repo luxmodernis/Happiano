@@ -145,66 +145,74 @@ body{
 }
 
 /* ═══════════════════════════════════════
+   CONFETTIS ROSES (écran récompense)
+═══════════════════════════════════════ */
+.ptcl-pink{
+  position:fixed;border-radius:50%;background:var(--pink);
+  pointer-events:none;z-index:600;
+  transform:translate(-50%,-50%);
+  animation:pConf var(--d,1.4s) cubic-bezier(.18,.89,.32,1) both;
+  animation-delay:var(--delay,0s);
+}
+@keyframes pConf{
+  0%  {opacity:1;transform:translate(-50%,-50%) scale(1);}
+  28% {opacity:.95;transform:translate(calc(-50% + var(--tx)*.38),calc(-50% + var(--rise))) scale(.88);}
+  100%{opacity:0;transform:translate(calc(-50% + var(--tx)),calc(-50% + var(--fall))) scale(.15);}
+}
+
+/* ═══════════════════════════════════════
    REWARD SCREEN  (score > 80%)
-   Phase 1 : titre seul, centré
-   Phase 2 : célébration (GIF + score + …)
+   Phase 1 : titre centré plein écran
+   Phase 2 : célébration monte depuis le bas
 ═══════════════════════════════════════ */
 #reward{
   position:fixed;inset:0;z-index:400;background:var(--white);
-  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
   opacity:0;pointer-events:none;transition:opacity .65s;cursor:none;
-  overflow-y:auto;
 }
 #reward.on{opacity:1;pointer-events:all;}
 
-/* Conteneur principal — flex colonne centré */
-.rw{
-  text-align:center;padding:3rem 2rem 2.5rem;
-  display:flex;flex-direction:column;align-items:center;
-  width:100%;max-width:560px;
+/* ── Panneau 1 : titre seul, centré ── */
+.rw-p1{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .85s cubic-bezier(.65,0,.35,1);
 }
-
-/* ── Phase 1 : titre ── */
-.rw-eyebrow{
-  font-size:.52rem;letter-spacing:.42em;text-transform:uppercase;
-  color:rgba(17,17,17,.32);margin-bottom:1rem;
-  opacity:0;transform:translateY(10px);
-  transition:opacity .55s .35s, transform .55s .35s;
-}
-#reward.on .rw-eyebrow{opacity:1;transform:none;}
+#reward.on.phase2 .rw-p1{transform:translateY(-100%);}
 
 .rw-title{
-  font-size:clamp(3.6rem,11vw,7.5rem);font-weight:900;
-  text-transform:uppercase;letter-spacing:-.048em;line-height:.82;
-  margin-bottom:0;
+  font-size:clamp(2.7rem,8.25vw,5.6rem);font-weight:900;
+  text-transform:uppercase;letter-spacing:-.048em;line-height:.84;
+  text-align:center;
   opacity:0;transform:translateY(28px);
-  transition:opacity .7s .55s, transform .7s .55s;
+  transition:opacity .7s .5s, transform .7s .5s;
 }
 #reward.on .rw-title{opacity:1;transform:none;}
 
-/* Séparateur discret entre les deux phases */
-.rw-sep{
-  width:32px;height:2px;background:var(--black);
-  margin:2.2rem auto 2rem;
-  opacity:0;transform:scaleX(0);transform-origin:left;
-  transition:opacity .4s 0s, transform .5s 0s;
+/* ── Panneau 2 : célébration, arrive par le bas ── */
+.rw-p2{
+  position:absolute;inset:0;overflow-y:auto;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:2.5rem 2rem;
+  text-align:center;
+  transform:translateY(100%);
+  transition:transform .85s cubic-bezier(.65,0,.35,1);
 }
-#reward.on.phase2 .rw-sep{opacity:1;transform:scaleX(1);}
+#reward.on.phase2 .rw-p2{transform:translateY(0);}
 
-/* ── Phase 2 : célébration ── */
 .rw-gif{
-  width:220px;height:220px;object-fit:cover;display:block;
-  margin-bottom:1.6rem;
-  opacity:0;transform:scale(.8) translateY(16px);
-  transition:opacity .55s 0s, transform .55s 0s;
+  width:210px;height:210px;object-fit:cover;display:block;
+  margin-bottom:1.5rem;
+  opacity:0;transform:scale(.85);
+  transition:opacity .5s .1s, transform .5s .1s;
 }
 #reward.on.phase2 .rw-gif{opacity:1;transform:none;}
 
 .rw-score{
-  font-size:clamp(2rem,6vw,3rem);font-weight:900;letter-spacing:-.04em;
-  margin-bottom:.35rem;
+  font-size:clamp(2.2rem,6vw,3.2rem);font-weight:900;letter-spacing:-.04em;
+  margin-bottom:.4rem;
   opacity:0;transform:translateY(14px);
-  transition:opacity .45s .12s, transform .45s .12s;
+  transition:opacity .45s .22s, transform .45s .22s;
 }
 #reward.on.phase2 .rw-score{opacity:1;transform:none;}
 
@@ -213,15 +221,16 @@ body{
   color:rgba(17,17,17,.4);max-width:300px;line-height:1.9;
   margin-bottom:1.1rem;
   opacity:0;transform:translateY(10px);
-  transition:opacity .45s .24s, transform .45s .24s;
+  transition:opacity .45s .34s, transform .45s .34s;
 }
 #reward.on.phase2 .rw-msg{opacity:1;transform:none;}
 
 .rw-team{
-  font-size:.48rem;letter-spacing:.28em;text-transform:uppercase;
-  color:rgba(17,17,17,.25);margin-bottom:1.6rem;
+  font-size:.48rem;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(17,17,17,.28);max-width:340px;line-height:2;
+  margin-bottom:1.6rem;
   opacity:0;
-  transition:opacity .45s .36s;
+  transition:opacity .45s .46s;
 }
 #reward.on.phase2 .rw-team{opacity:1;}
 
@@ -231,7 +240,7 @@ body{
   font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
   font-size:.67rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
   opacity:0;transform:translateY(8px);
-  transition:opacity .4s .48s, transform .4s .48s, background .13s, color .13s;
+  transition:opacity .4s .58s, transform .4s .58s, background .13s, color .13s;
 }
 #reward.on.phase2 .rw-close{opacity:1;transform:none;}
 .rw-close:hover{background:var(--black);color:var(--white);}
@@ -321,12 +330,12 @@ body{
 
 <!-- ═══ REWARD > 80% ═══ -->
 <div id="reward">
-  <div class="rw">
-    <!-- Phase 1 : révélation -->
-    <div class="rw-eyebrow" id="rwEyebrow"></div>
-    <div class="rw-title"   id="rwTitle"></div>
-    <!-- Phase 2 : célébration -->
-    <div class="rw-sep"></div>
+  <!-- Phase 1 : titre centré -->
+  <div class="rw-p1">
+    <div class="rw-title" id="rwTitle"></div>
+  </div>
+  <!-- Phase 2 : célébration depuis le bas -->
+  <div class="rw-p2">
     <img class="rw-gif"   id="rwGif" src="" alt="">
     <div class="rw-score" id="rwScore"></div>
     <div class="rw-msg"   id="rwMsg"></div>
@@ -355,7 +364,6 @@ document.getElementById('uiHint').textContent     = TXT_UI.hint;
 document.getElementById('bdemo').textContent      = TXT_UI.btnDemo;
 document.getElementById('uiBtnReset').textContent = TXT_UI.btnReset;
 
-document.getElementById('rwEyebrow').textContent  = TXT_REWARD.eyebrow;
 document.getElementById('rwTitle').innerHTML      = TXT_REWARD.title.replace(/\n/g, '<br>');
 document.getElementById('rwTeam').textContent     = TXT_REWARD.team;
 document.getElementById('rwClose').textContent    = TXT_REWARD.btnClose;
@@ -545,6 +553,25 @@ function shakeBar() {
   setTimeout(() => bar.classList.remove('shake'), 340);
 }
 
+/* ── Confettis roses — explosion parabole depuis le centre ── */
+function burstConfetti() {
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight * 0.44;
+  for (let i = 0; i < 48; i++) {
+    const p = document.createElement('div');
+    p.className = 'ptcl-pink';
+    const size  = (Math.random() * 13 + 7).toFixed(1);
+    const tx    = ((Math.random() - .5) * 400).toFixed(1);
+    const rise  = -(Math.random() * 140 + 55).toFixed(1);
+    const fall  = (Math.random() * 230 + 170).toFixed(1);
+    const dur   = (Math.random() * .7 + 1.1).toFixed(2);
+    const delay = (Math.random() * .38).toFixed(2);
+    p.style.cssText = `left:${cx}px;top:${cy}px;width:${size}px;height:${size}px;--tx:${tx}px;--rise:${rise}px;--fall:${fall}px;--d:${dur}s;--delay:${delay}s`;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), (parseFloat(dur) + parseFloat(delay) + .2) * 1000);
+  }
+}
+
 /* ── Confetti burst on correct note ── */
 function burst(keyId) {
   const el = document.getElementById('k-' + keyId); if (!el) return;
@@ -653,12 +680,15 @@ function showEnd() {
     const rewardEl = document.getElementById('reward');
     rewardEl.classList.remove('phase2');
     rewardEl.classList.add('on');
-    // Phase 2 : célébration après 1,8 s
+    // Confettis roses dès l'apparition du titre
+    setTimeout(() => burstConfetti(), 350);
+    setTimeout(() => burstConfetti(), 850);
+    // Phase 2 : résultats montent depuis le bas après 2,5 s
     setTimeout(() => {
       rewardEl.classList.add('phase2');
       // Fanfare fa majeur au déclenchement phase 2
       ['F4','A4','C5','F4'].forEach((n, i) => setTimeout(() => pn(n, 1.5, .22), i * 75));
-    }, 1800);
+    }, 2500);
   } else {
     // Regular reveal — secret not revealed
     document.getElementById('rvScore').textContent = s + '%';

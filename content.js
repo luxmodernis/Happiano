@@ -29,9 +29,8 @@ const MSGS = [
 
 /* ── Textes de l'écran récompense (> 80%) ── */
 const TXT_REWARD = {
-  eyebrow : "Lux Modernis",
-  title   : "Joyeux\nAnni-\nversaire",   // \n = saut de ligne (<br>)
-  team    : "À toute l'équipe — merci de briller chaque jour.",
+  title   : "Joyeux\nAnni-\nversaire\nLux",   // \n = saut de ligne (<br>)
+  team    : "Merci pour votre confiance et votre fidélité — c'est avec vous que Lux Modernis grandit, année après année.",
   btnClose: "Rejouer →",
 };
 
