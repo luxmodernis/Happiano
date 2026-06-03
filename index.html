@@ -196,7 +196,7 @@ body{
   position:absolute;inset:0;overflow-y:auto;
   display:flex;flex-direction:column;align-items:center;
   justify-content:center;padding:2.5rem 2rem;
-  text-align:center;
+  text-align:center;background:var(--white);
   transform:translateY(100%);
   transition:transform .85s cubic-bezier(.65,0,.35,1);
 }
@@ -247,61 +247,7 @@ body{
 #reward.on.phase2 .rw-close{opacity:1;transform:none;}
 .rw-close:hover{background:var(--black);color:var(--white);}
 
-/* ═══════════════════════════════════════
-   REGULAR REVEAL  (score ≤ 80%)
-   No "Anniversaire" shown
-═══════════════════════════════════════ */
-#reveal{
-  position:fixed;inset:0;z-index:300;background:var(--pink);
-  display:flex;align-items:center;justify-content:center;
-  opacity:0;pointer-events:none;transition:opacity .65s;cursor:none;
-}
-#reveal.on{opacity:1;pointer-events:all;}
-
-.rv{text-align:center;padding:2rem;display:flex;flex-direction:column;align-items:center;}
-
-.rv-logo{
-  display:inline-block;background:var(--pink);padding:.42rem .55rem;line-height:.84;
-  margin-bottom:2rem;
-  opacity:0;transform:scale(.7);
-  transition:opacity .5s .2s,transform .5s .2s;
-}
-.rv-logo span{display:block;font-size:1.9rem;font-weight:900;letter-spacing:-.04em;text-transform:lowercase;}
-#reveal.on .rv-logo{opacity:1;transform:scale(1);}
-
-.rv-score{
-  font-size:5rem;font-weight:900;letter-spacing:-.055em;line-height:1;
-  margin-bottom:.5rem;
-  opacity:0;transform:translateY(22px);
-  transition:opacity .55s .45s,transform .55s .45s;
-}
-#reveal.on .rv-score{opacity:1;transform:none;}
-
-.rv-msg{
-  font-size:.58rem;font-weight:400;letter-spacing:.22em;text-transform:uppercase;
-  color:rgba(17,17,17,.42);max-width:320px;line-height:1.9;margin-bottom:.8rem;
-  opacity:0;transform:translateY(12px);
-  transition:opacity .5s .7s,transform .5s .7s;
-}
-#reveal.on .rv-msg{opacity:1;transform:none;}
-
-.rv-sub{
-  font-size:.5rem;letter-spacing:.3em;text-transform:uppercase;
-  color:rgba(17,17,17,.3);margin-bottom:1.8rem;
-  opacity:0;transition:opacity .5s .9s;
-}
-#reveal.on .rv-sub{opacity:1;}
-
-.rv-close{
-  border:2px solid var(--black);border-radius:0;background:transparent;color:var(--black);
-  padding:.6rem 1.8rem;cursor:none;
-  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
-  font-size:.67rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-  opacity:0;transform:translateY(10px);
-  transition:opacity .5s 1.05s,transform .5s 1.05s,background .13s,color .13s;
-}
-#reveal.on .rv-close{opacity:1;transform:none;}
-.rv-close:hover{background:var(--black);color:var(--pink);}
+/* (écran reveal supprimé — tout passe par #reward) */
 </style>
 </head>
 <body>
@@ -347,16 +293,6 @@ body{
   </div>
 </div>
 
-<!-- ═══ REVEAL ≤ 80% ═══ -->
-<div id="reveal">
-  <div class="rv">
-    <div class="rv-logo"><span>lux</span><span>mod</span><span>ernis</span></div>
-    <div class="rv-score" id="rvScore"></div>
-    <div class="rv-msg"   id="rvMsg"></div>
-    <div class="rv-sub"  id="rvSub"></div>
-    <button class="rv-close" id="rvClose" onclick="closeReveal()"></button>
-  </div>
-</div>
 
 <script>
 /* ══════════════════════════
@@ -371,8 +307,6 @@ document.getElementById('rwTitle').innerHTML      = TXT_REWARD.title.replace(/\n
 document.getElementById('rwTeam').textContent     = TXT_REWARD.team;
 document.getElementById('rwClose').textContent    = TXT_REWARD.btnClose;
 
-document.getElementById('rvSub').textContent      = TXT_REVEAL.sub;
-document.getElementById('rvClose').textContent    = TXT_REVEAL.btnClose;
 
 /* ══════════════════════════
    BALL CURSOR
@@ -688,38 +622,30 @@ function showEnd() {
   const s   = calcScore();
   const msg = getMsg(s);
 
+  const gif = document.getElementById('rwGif');
   if (s > 80) {
-    // REWARD — Phase 1 : titre seul
-    document.getElementById('rwGif').src           = GIFS[Math.floor(Math.random() * GIFS.length)];
-    document.getElementById('rwScore').textContent  = s + '%';
-    document.getElementById('rwMsg').textContent    = msg;
-    const rewardEl = document.getElementById('reward');
-    rewardEl.classList.remove('phase2');
-    rewardEl.classList.add('on');
-    // Confettis roses dès l'apparition du titre
-    setTimeout(() => burstConfetti(), 350);
-    setTimeout(() => burstConfetti(), 850);
-    // Phase 2 : résultats montent depuis le bas après 2,5 s
-    setTimeout(() => {
-      rewardEl.classList.add('phase2');
-      // Fanfare fa majeur au déclenchement phase 2
-      ['F4','A4','C5','F4'].forEach((n, i) => setTimeout(() => pn(n, 1.5, .22), i * 75));
-    }, 2500);
+    gif.src = GIFS[Math.floor(Math.random() * GIFS.length)];
+    gif.style.display = 'block';
   } else {
-    // Regular reveal — secret not revealed
-    document.getElementById('rvScore').textContent = s + '%';
-    document.getElementById('rvMsg').textContent   = msg;
-    document.getElementById('reveal').classList.add('on');
+    gif.style.display = 'none';
   }
+  document.getElementById('rwScore').textContent = s + '%';
+  document.getElementById('rwMsg').textContent   = msg;
+
+  const rewardEl = document.getElementById('reward');
+  rewardEl.classList.remove('phase2');
+  rewardEl.classList.add('on');
+  setTimeout(() => burstConfetti(), 350);
+  setTimeout(() => burstConfetti(), 850);
+  setTimeout(() => {
+    rewardEl.classList.add('phase2');
+    if (s > 80) ['F4','A4','C5','F4'].forEach((n, i) => setTimeout(() => pn(n, 1.5, .22), i * 75));
+  }, 2500);
 }
 
 function closeReward() {
   const el = document.getElementById('reward');
   el.classList.remove('on', 'phase2');
-  resetAll();
-}
-function closeReveal() {
-  document.getElementById('reveal').classList.remove('on');
   resetAll();
 }
 </script>
