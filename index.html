@@ -621,9 +621,12 @@ function chk(id) {
 }
 
 function cheatEnd() {
-  si = MEL.length;
+  // Score aléatoire : nWrong entre 0 et 30 → donne ~45%–100%
   nCorrect = 25;
-  nWrong = Math.floor(Math.random() * 32); // score aléatoire 0–100%
+  nWrong   = Math.floor(Math.random() * 31);
+  si       = MEL.length;
+  document.querySelectorAll('.dot').forEach(d => d.classList.add('on'));
+  setGuide(-1);
   showEnd();
 }
 
