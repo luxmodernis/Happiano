@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lux Modernis</title>
 <script src="./content.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{--pink:#E4AEAE;--black:#111;--white:#fff;}
@@ -493,23 +494,19 @@ function shakeBar() {
   setTimeout(() => bar.classList.remove('shake'), 340);
 }
 
-/* ── Confettis roses — explosion parabole depuis le centre ── */
+/* ── Confettis roses — canvas-confetti, ronds roses uniquement ── */
 function burstConfetti() {
-  const cx = window.innerWidth / 2;
-  const cy = window.innerHeight * 0.44;
-  for (let i = 0; i < 48; i++) {
-    const p = document.createElement('div');
-    p.className = 'ptcl-pink';
-    const size  = (Math.random() * 13 + 7).toFixed(1);
-    const tx    = ((Math.random() - .5) * 400).toFixed(1);
-    const rise  = -(Math.random() * 140 + 55).toFixed(1);
-    const fall  = (Math.random() * 230 + 170).toFixed(1);
-    const dur   = (Math.random() * .7 + 1.1).toFixed(2);
-    const delay = (Math.random() * .38).toFixed(2);
-    p.style.cssText = `left:${cx}px;top:${cy}px;width:${size}px;height:${size}px;--tx:${tx}px;--rise:${rise}px;--fall:${fall}px;--d:${dur}s;--delay:${delay}s`;
-    document.body.appendChild(p);
-    setTimeout(() => p.remove(), (parseFloat(dur) + parseFloat(delay) + .2) * 1000);
-  }
+  const cfg = {
+    origin:   { y: 0.5 },
+    colors:   ['#E4AEAE'],
+    shapes:   ['circle'],
+    ticks:    180,
+  };
+  confetti({ ...cfg, particleCount: 50,  spread: 26,  startVelocity: 55 });
+  confetti({ ...cfg, particleCount: 40,  spread: 60 });
+  confetti({ ...cfg, particleCount: 70,  spread: 100, decay: 0.91, scalar: 0.8 });
+  confetti({ ...cfg, particleCount: 20,  spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+  confetti({ ...cfg, particleCount: 20,  spread: 120, startVelocity: 45 });
 }
 
 /* ── Confetti burst on correct note ── */
@@ -640,9 +637,7 @@ function showEnd() {
 }
 
 function closeReward() {
-  const el = document.getElementById('reward');
-  el.classList.remove('on', 'phase2');
-  resetAll();
+  location.reload();
 }
 </script>
 </body>
