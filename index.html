@@ -107,7 +107,7 @@ body{
 .kb.press{background:#2d2d2d;transform:scaleY(.97);transform-origin:top;box-shadow:0 2px 4px rgba(0,0,0,.22);}
 .kb.lit  {background:var(--pink)!important;}
 .kb.guide{animation:kbPulse .65s ease-in-out infinite;}
-@keyframes kbPulse{0%,100%{background:var(--black);}50%{background:#5c2424;}}
+@keyframes kbPulse{0%,100%{background:var(--black);}50%{background:#e8e8e8;}}
 .kb.guide.press,.kb.guide.lit{animation:none;}
 .kb.miss{animation:kbMiss .25s ease-out forwards;}
 @keyframes kbMiss{0%{background:var(--black);}45%{background:#8a0000;}100%{background:var(--black);}}
@@ -146,71 +146,94 @@ body{
 
 /* ═══════════════════════════════════════
    REWARD SCREEN  (score > 80%)
-   "Joyeux Anniversaire" revealed here
+   Phase 1 : titre seul, centré
+   Phase 2 : célébration (GIF + score + …)
 ═══════════════════════════════════════ */
 #reward{
   position:fixed;inset:0;z-index:400;background:var(--white);
   display:flex;align-items:center;justify-content:center;
   opacity:0;pointer-events:none;transition:opacity .65s;cursor:none;
+  overflow-y:auto;
 }
 #reward.on{opacity:1;pointer-events:all;}
 
-.rw{text-align:center;padding:2rem;display:flex;flex-direction:column;align-items:center;gap:0;}
-
-.rw-gif{
-  width:230px;height:230px;object-fit:cover;display:block;margin-bottom:1.5rem;
-  opacity:0;transform:scale(.75);
-  transition:opacity .55s .2s,transform .55s .2s;
+/* Conteneur principal — flex colonne centré */
+.rw{
+  text-align:center;padding:3rem 2rem 2.5rem;
+  display:flex;flex-direction:column;align-items:center;
+  width:100%;max-width:560px;
 }
-#reward.on .rw-gif{opacity:1;transform:scale(1);}
 
+/* ── Phase 1 : titre ── */
 .rw-eyebrow{
-  font-size:.5rem;letter-spacing:.38em;text-transform:uppercase;
-  color:rgba(17,17,17,.3);margin-bottom:.45rem;
-  opacity:0;transition:opacity .45s .5s;
+  font-size:.52rem;letter-spacing:.42em;text-transform:uppercase;
+  color:rgba(17,17,17,.32);margin-bottom:1rem;
+  opacity:0;transform:translateY(10px);
+  transition:opacity .55s .35s, transform .55s .35s;
 }
-#reward.on .rw-eyebrow{opacity:1;}
+#reward.on .rw-eyebrow{opacity:1;transform:none;}
 
 .rw-title{
-  font-size:clamp(2.8rem,8.5vw,6rem);font-weight:900;
-  text-transform:uppercase;letter-spacing:-.045em;line-height:.84;
-  margin-bottom:.65rem;
-  opacity:0;transform:translateY(24px);
-  transition:opacity .6s .6s,transform .6s .6s;
+  font-size:clamp(3.6rem,11vw,7.5rem);font-weight:900;
+  text-transform:uppercase;letter-spacing:-.048em;line-height:.82;
+  margin-bottom:0;
+  opacity:0;transform:translateY(28px);
+  transition:opacity .7s .55s, transform .7s .55s;
 }
 #reward.on .rw-title{opacity:1;transform:none;}
 
-.rw-score{
-  font-size:1.5rem;font-weight:900;letter-spacing:-.04em;margin-bottom:.4rem;
-  opacity:0;transform:translateY(14px);
-  transition:opacity .5s .8s,transform .5s .8s;
+/* Séparateur discret entre les deux phases */
+.rw-sep{
+  width:32px;height:2px;background:var(--black);
+  margin:2.2rem auto 2rem;
+  opacity:0;transform:scaleX(0);transform-origin:left;
+  transition:opacity .4s 0s, transform .5s 0s;
 }
-#reward.on .rw-score{opacity:1;transform:none;}
+#reward.on.phase2 .rw-sep{opacity:1;transform:scaleX(1);}
+
+/* ── Phase 2 : célébration ── */
+.rw-gif{
+  width:220px;height:220px;object-fit:cover;display:block;
+  margin-bottom:1.6rem;
+  opacity:0;transform:scale(.8) translateY(16px);
+  transition:opacity .55s 0s, transform .55s 0s;
+}
+#reward.on.phase2 .rw-gif{opacity:1;transform:none;}
+
+.rw-score{
+  font-size:clamp(2rem,6vw,3rem);font-weight:900;letter-spacing:-.04em;
+  margin-bottom:.35rem;
+  opacity:0;transform:translateY(14px);
+  transition:opacity .45s .12s, transform .45s .12s;
+}
+#reward.on.phase2 .rw-score{opacity:1;transform:none;}
 
 .rw-msg{
   font-size:.58rem;font-weight:400;letter-spacing:.22em;text-transform:uppercase;
-  color:rgba(17,17,17,.4);max-width:300px;line-height:1.9;margin-bottom:.9rem;
-  opacity:0;transform:translateY(12px);
-  transition:opacity .5s .95s,transform .5s .95s;
+  color:rgba(17,17,17,.4);max-width:300px;line-height:1.9;
+  margin-bottom:1.1rem;
+  opacity:0;transform:translateY(10px);
+  transition:opacity .45s .24s, transform .45s .24s;
 }
-#reward.on .rw-msg{opacity:1;transform:none;}
+#reward.on.phase2 .rw-msg{opacity:1;transform:none;}
 
 .rw-team{
-  font-size:.5rem;letter-spacing:.28em;text-transform:uppercase;
-  color:rgba(17,17,17,.28);margin-bottom:1.6rem;
-  opacity:0;transition:opacity .5s 1.1s;
+  font-size:.48rem;letter-spacing:.28em;text-transform:uppercase;
+  color:rgba(17,17,17,.25);margin-bottom:1.6rem;
+  opacity:0;
+  transition:opacity .45s .36s;
 }
-#reward.on .rw-team{opacity:1;}
+#reward.on.phase2 .rw-team{opacity:1;}
 
 .rw-close{
   border:2px solid var(--black);border-radius:0;background:transparent;color:var(--black);
   padding:.6rem 1.8rem;cursor:none;
   font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
   font-size:.67rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-  opacity:0;transform:translateY(10px);
-  transition:opacity .5s 1.25s,transform .5s 1.25s,background .13s,color .13s;
+  opacity:0;transform:translateY(8px);
+  transition:opacity .4s .48s, transform .4s .48s, background .13s, color .13s;
 }
-#reward.on .rw-close{opacity:1;transform:none;}
+#reward.on.phase2 .rw-close{opacity:1;transform:none;}
 .rw-close:hover{background:var(--black);color:var(--white);}
 
 /* ═══════════════════════════════════════
@@ -299,12 +322,15 @@ body{
 <!-- ═══ REWARD > 80% ═══ -->
 <div id="reward">
   <div class="rw">
-    <img class="rw-gif" id="rwGif" src="" alt="">
+    <!-- Phase 1 : révélation -->
     <div class="rw-eyebrow" id="rwEyebrow"></div>
     <div class="rw-title"   id="rwTitle"></div>
-    <div class="rw-score"   id="rwScore"></div>
-    <div class="rw-msg"     id="rwMsg"></div>
-    <div class="rw-team"    id="rwTeam"></div>
+    <!-- Phase 2 : célébration -->
+    <div class="rw-sep"></div>
+    <img class="rw-gif"   id="rwGif" src="" alt="">
+    <div class="rw-score" id="rwScore"></div>
+    <div class="rw-msg"   id="rwMsg"></div>
+    <div class="rw-team"  id="rwTeam"></div>
     <button class="rw-close" id="rwClose" onclick="closeReward()"></button>
   </div>
 </div>
@@ -620,13 +646,19 @@ function showEnd() {
   const msg = getMsg(s);
 
   if (s > 80) {
-    // REWARD — "Joyeux Anniversaire" revealed here
-    document.getElementById('rwGif').src          = GIFS[Math.floor(Math.random() * GIFS.length)];
-    document.getElementById('rwScore').textContent = s + '%';
-    document.getElementById('rwMsg').textContent   = msg;
-    document.getElementById('reward').classList.add('on');
-    // F-major fanfare arpeggio
-    ['F4','A4','C5','F4'].forEach((n, i) => setTimeout(() => pn(n, 1.5, .22), i * 75));
+    // REWARD — Phase 1 : titre seul
+    document.getElementById('rwGif').src           = GIFS[Math.floor(Math.random() * GIFS.length)];
+    document.getElementById('rwScore').textContent  = s + '%';
+    document.getElementById('rwMsg').textContent    = msg;
+    const rewardEl = document.getElementById('reward');
+    rewardEl.classList.remove('phase2');
+    rewardEl.classList.add('on');
+    // Phase 2 : célébration après 1,8 s
+    setTimeout(() => {
+      rewardEl.classList.add('phase2');
+      // Fanfare fa majeur au déclenchement phase 2
+      ['F4','A4','C5','F4'].forEach((n, i) => setTimeout(() => pn(n, 1.5, .22), i * 75));
+    }, 1800);
   } else {
     // Regular reveal — secret not revealed
     document.getElementById('rvScore').textContent = s + '%';
@@ -636,7 +668,8 @@ function showEnd() {
 }
 
 function closeReward() {
-  document.getElementById('reward').classList.remove('on');
+  const el = document.getElementById('reward');
+  el.classList.remove('on', 'phase2');
   resetAll();
 }
 function closeReveal() {
