@@ -508,7 +508,7 @@ function getConfetti() {
 }
 function burstConfetti() {
   const fire = getConfetti();
-  const cfg  = { origin: { y: 0.48 }, colors: ['#E4AEAE', '#d4908e'], shapes: ['circle'], ticks: 320 };
+  const cfg  = { origin: { y: 0.67 }, colors: ['#E4AEAE', '#d4908e'], shapes: ['circle'], ticks: 320 };
   fire({ ...cfg, particleCount: 50,  spread: 26,  startVelocity: 55 });
   fire({ ...cfg, particleCount: 40,  spread: 60 });
   fire({ ...cfg, particleCount: 70,  spread: 100, decay: 0.91, scalar: 0.8 });
