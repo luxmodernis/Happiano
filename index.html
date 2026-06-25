@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lux Modernis</title>
+<script src="./content.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--pink:#E4AEAE;--black:#111;--white:#fff;}
+
+body{
+  background:var(--pink);color:var(--black);
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  overflow:hidden;position:relative;user-select:none;cursor:none;
+}
+
+/* ═══ BALL CURSOR ═══ */
+#ball{
+  position:fixed;width:20px;height:20px;border-radius:50%;
+  background:var(--white);pointer-events:none;z-index:9999;
+  transform:translate(-50%,-50%);
+  transition:background .14s,width .14s,height .14s;
+  will-change:left,top;
+}
+#ball.keys{background:var(--pink);width:26px;height:26px;outline:2px solid rgba(0,0,0,.2);}
+#ball.click{width:12px;height:12px;}
+
+/* ═══ LOGO ═══ */
+.logo{
+  position:fixed;top:1.6rem;left:50%;transform:translateX(-50%);
+  z-index:20;background:var(--pink);padding:.38rem .52rem;line-height:.84;cursor:none;
+}
+.logo span{display:block;font-size:1.2rem;font-weight:900;letter-spacing:-.04em;text-transform:lowercase;}
+
+/* ═══ PAGE ═══ */
+.page{
+  position:relative;z-index:2;display:flex;flex-direction:column;
+  align-items:center;padding:4.8rem 1rem 1.2rem;width:100%;
+}
+
+/* No "Anniversaire" — just the call to action */
+.title{
+  font-size:clamp(3.2rem,9vw,6.5rem);font-weight:900;
+  text-transform:uppercase;letter-spacing:-.045em;
+  line-height:.84;text-align:center;margin-bottom:.6rem;
+}
+.hint{
+  font-size:.58rem;font-weight:400;letter-spacing:.25em;
+  text-transform:uppercase;color:rgba(17,17,17,.4);
+  margin-bottom:1.8rem;text-align:center;
+}
+
+/* ═══ PROGRESS DOTS ═══ */
+.prog{
+  display:flex;gap:4px;justify-content:center;flex-wrap:wrap;
+  max-width:540px;margin-bottom:1.6rem;
+}
+.dot{width:5px;height:5px;border-radius:50%;background:rgba(17,17,17,.15);}
+.dot.on{background:var(--black);}
+
+/* ═══ PIANO ═══ */
+.piano-wrap{display:inline-flex;flex-direction:column;margin-bottom:1.8rem;cursor:none;}
+.piano-bar{height:7px;background:var(--black);}
+.piano-bar.shake{animation:barShake .32s ease-out;}
+@keyframes barShake{
+  0%,100%{transform:translateX(0);}
+  20%{transform:translateX(-5px);}
+  50%{transform:translateX(4px);}
+  75%{transform:translateX(-2px);}
+}
+.piano{position:relative;display:flex;height:178px;}
+
+/* White keys — no border, just pink gap between them */
+.kw{
+  width:44px;height:178px;background:var(--white);
+  margin-right:2px;border-radius:0 0 3px 3px;
+  border-bottom:3px solid rgba(0,0,0,.09);
+  cursor:none;position:relative;flex-shrink:0;
+  display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;
+  transition:background .07s,transform .05s;
+}
+.kw:last-child{margin-right:0;}
+.kw.press{background:#dedede;transform:scaleY(.976);transform-origin:top;}
+.kw.lit  {background:var(--pink)!important;transition:background .04s;}
+/* Guide pulse — next expected note */
+.kw.guide{animation:gwPulse .65s ease-in-out infinite;}
+@keyframes gwPulse{0%,100%{background:var(--white);}50%{background:#f0cbcb;}}
+.kw.guide.press,.kw.guide.lit{animation:none;}
+/* Wrong-note flash on pressed key */
+.kw.miss{animation:kwMiss .25s ease-out forwards;}
+@keyframes kwMiss{0%{background:var(--white);}45%{background:#f5a0a0;}100%{background:var(--white);}}
+
+.klw{font-size:8px;color:#c8c8c8;font-weight:400;pointer-events:none;letter-spacing:.02em;}
+
+/* Black keys */
+.kb{
+  width:28px;height:108px;background:var(--black);
+  border-radius:0 0 3px 3px;cursor:none;
+  position:absolute;top:0;z-index:10;
+  display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;
+  box-shadow:1px 4px 8px rgba(0,0,0,.22);
+  transition:background .07s,transform .05s;
+}
+.kb.press{background:#2d2d2d;transform:scaleY(.97);transform-origin:top;box-shadow:0 2px 4px rgba(0,0,0,.22);}
+.kb.lit  {background:var(--pink)!important;}
+.kb.guide{animation:kbPulse .65s ease-in-out infinite;}
+@keyframes kbPulse{0%,100%{background:var(--black);}50%{background:#e8e8e8;}}
+.kb.guide.press,.kb.guide.lit{animation:none;}
+.kb.miss{animation:kbMiss .25s ease-out forwards;}
+@keyframes kbMiss{0%{background:var(--black);}45%{background:#8a0000;}100%{background:var(--black);}}
+
+.klb{font-size:7px;color:rgba(255,255,255,.42);font-weight:400;pointer-events:none;}
+
+/* ═══ CONFETTI PARTICLES ═══ */
+.ptcl{
+  position:fixed;border-radius:50%;background:var(--white);
+  pointer-events:none;z-index:500;
+  transform:translate(-50%,-50%);
+  animation:pFly var(--d,.58s) ease-out forwards;
+}
+@keyframes pFly{
+  0%  {opacity:1;transform:translate(-50%,-50%) scale(1);}
+  60% {opacity:.8;}
+  100%{opacity:0;transform:translate(calc(-50% + var(--tx)),calc(-50% + var(--ty))) scale(.06);}
+}
+
+/* ═══ BUTTONS ═══ */
+.btns{display:flex;gap:10px;margin-bottom:1.3rem;}
+.pill{
+  border:2px solid var(--black);border-radius:0;background:transparent;color:var(--black);
+  padding:.58rem 1.5rem;cursor:none;
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
+  font-size:.67rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  transition:background .13s,color .13s;
+}
+.pill:hover{background:var(--black);color:var(--pink);}
+.pill:disabled{opacity:.24;}
+
+.kbhint{
+  font-size:.48rem;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(17,17,17,.26);text-align:center;line-height:2.1;
+}
+
+/* ═══════════════════════════════════════
+   CONFETTIS ROSES (écran récompense)
+═══════════════════════════════════════ */
+.ptcl-pink{
+  position:fixed;border-radius:50%;background:var(--pink);
+  pointer-events:none;z-index:600;
+  transform:translate(-50%,-50%);
+  animation:pConf var(--d,1.4s) cubic-bezier(.18,.89,.32,1) both;
+  animation-delay:var(--delay,0s);
+}
+@keyframes pConf{
+  0%  {opacity:1;transform:translate(-50%,-50%) scale(1);}
+  28% {opacity:.95;transform:translate(calc(-50% + var(--tx)*.38),calc(-50% + var(--rise))) scale(.88);}
+  100%{opacity:0;transform:translate(calc(-50% + var(--tx)),calc(-50% + var(--fall))) scale(.15);}
+}
+
+/* ═══════════════════════════════════════
+   REWARD SCREEN  (score > 80%)
+   Phase 1 : titre centré plein écran
+   Phase 2 : célébration monte depuis le bas
+═══════════════════════════════════════ */
+#reward{
+  position:fixed;inset:0;z-index:400;background:var(--white);
+  overflow:hidden;
+  opacity:0;pointer-events:none;transition:opacity .65s;cursor:none;
+}
+/* Curseur rose sur les écrans de résultat */
+#ball.result{background:var(--pink);width:26px;height:26px;}
+#reward.on{opacity:1;pointer-events:all;}
+
+/* ── Panneau 1 : titre seul, centré ── */
+.rw-p1{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .85s cubic-bezier(.65,0,.35,1);
+}
+#reward.on.phase2 .rw-p1{transform:translateY(-100%);}
+
+.rw-title{
+  font-size:clamp(3.4rem,10vw,7rem);font-weight:900;
+  text-transform:uppercase;letter-spacing:-.048em;line-height:.84;
+  text-align:center;
+  opacity:0;transform:translateY(28px);
+  transition:opacity .7s .5s, transform .7s .5s;
+}
+#reward.on .rw-title{opacity:1;transform:none;}
+
+/* ── Panneau 2 : célébration, arrive par le bas ── */
+.rw-p2{
+  position:absolute;inset:0;overflow-y:auto;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:2.5rem 2rem;
+  text-align:center;background:var(--white);
+  transform:translateY(100%);
+  transition:transform .85s cubic-bezier(.65,0,.35,1);
+}
+#reward.on.phase2 .rw-p2{transform:translateY(0);}
+
+.rw-gif{
+  width:210px;height:210px;object-fit:cover;display:block;
+  margin-bottom:1.5rem;
+  opacity:0;transform:scale(.85);
+  transition:opacity .5s .1s, transform .5s .1s;
+}
+#reward.on.phase2 .rw-gif{opacity:1;transform:none;}
+
+.rw-score{
+  font-size:clamp(3rem,8vw,4.5rem);font-weight:900;letter-spacing:-.04em;
+  margin-bottom:.4rem;
+  opacity:0;transform:translateY(14px);
+  transition:opacity .45s .22s, transform .45s .22s;
+}
+#reward.on.phase2 .rw-score{opacity:1;transform:none;}
+
+.rw-msg{
+  font-size:.72rem;font-weight:400;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(17,17,17,.4);max-width:360px;line-height:1.9;
+  margin-bottom:1.1rem;
+  opacity:0;transform:translateY(10px);
+  transition:opacity .45s .34s, transform .45s .34s;
+}
+#reward.on.phase2 .rw-msg{opacity:1;transform:none;}
+
+.rw-team{
+  font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(17,17,17,.28);max-width:380px;line-height:2;
+  margin-bottom:1.6rem;
+  opacity:0;
+  transition:opacity .45s .46s;
+}
+#reward.on.phase2 .rw-team{opacity:1;}
+
+.rw-close{
+  border:2px solid var(--black);border-radius:0;background:transparent;color:var(--black);
+  padding:.6rem 1.8rem;cursor:none;
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
+  font-size:.67rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  opacity:0;transform:translateY(8px);
+  transition:opacity .4s .58s, transform .4s .58s, background .13s, color .13s;
+}
+#reward.on.phase2 .rw-close{opacity:1;transform:none;}
+.rw-close:hover{background:var(--black);color:var(--white);}
+
+/* (écran reveal supprimé — tout passe par #reward) */
+
+/* ═══ RESPONSIVE MOBILE ═══ */
+/* Piano : transform-origin pour le scaling JS */
+.piano-wrap{ transform-origin: center top; }
+
+/* Cacher le curseur bille et rétablir le curseur natif sur touch */
+@media (hover: none) {
+  #ball { display: none; }
+  body, .piano-wrap, .kw, .kb, .pill, .rw-close, .logo, button { cursor: auto; }
+  /* Kbhint inutile sur mobile */
+  .kbhint { display: none; }
+}
+
+/* Overlay portrait */
+#orient-tip {
+  display: none;
+  position: fixed; inset: 0; z-index: 10000;
+  background: var(--black); color: var(--white);
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 1.4rem; padding: 2.5rem; text-align: center;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+.ot-icon { font-size: 3.2rem; line-height: 1; }
+.ot-title {
+  font-size: .72rem; font-weight: 900; letter-spacing: .22em;
+  text-transform: uppercase;
+}
+.ot-sub {
+  font-size: .55rem; letter-spacing: .18em; text-transform: uppercase;
+  opacity: .4; max-width: 260px; line-height: 2;
+}
+.ot-skip {
+  margin-top: .6rem;
+  background: transparent; border: 1px solid rgba(255,255,255,.3);
+  color: rgba(255,255,255,.5); padding: .5rem 1.2rem;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: .52rem; font-weight: 700; letter-spacing: .18em;
+  text-transform: uppercase; cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<div id="ball"></div>
+
+<!-- Overlay portrait mobile -->
+<div id="orient-tip">
+  <div class="ot-icon">↺</div>
+  <div class="ot-title">Tourne ton téléphone</div>
+  <div class="ot-sub">Le piano s'apprécie mieux en mode paysage</div>
+  <button class="ot-skip" id="otSkip">Continuer quand même →</button>
+</div>
+
+<div class="page">
+  <div class="title" id="uiTitle"></div>
+  <div class="hint"  id="uiHint"></div>
+  <div class="prog" id="prog"></div>
+  <div class="piano-wrap">
+    <div class="piano-bar" id="pbar"></div>
+    <div class="piano" id="piano"></div>
+  </div>
+  <div class="btns">
+    <button class="pill" id="bdemo" onclick="playDemo()"></button>
+    <button class="pill" onclick="resetAll()" id="uiBtnReset"></button>
+  </div>
+  <div class="kbhint">
+    Blanches : Q &nbsp;S &nbsp;D &nbsp;F &nbsp;G &nbsp;H &nbsp;J &nbsp;K &nbsp;L &nbsp;M<br>
+    Noires &nbsp;&nbsp;&nbsp;: Z &nbsp;E &nbsp;&nbsp;&nbsp;&nbsp; T &nbsp;Y &nbsp;U &nbsp;&nbsp;&nbsp;&nbsp; O &nbsp;P
+  </div>
+</div>
+
+<!-- ═══ REWARD > 80% ═══ -->
+<div id="reward">
+  <!-- Phase 1 : titre centré -->
+  <div class="rw-p1">
+    <div class="rw-title" id="rwTitle"></div>
+  </div>
+  <!-- Phase 2 : célébration depuis le bas -->
+  <div class="rw-p2">
+    <img class="rw-gif"   id="rwGif" src="" alt="">
+    <div class="rw-score" id="rwScore"></div>
+    <div class="rw-msg"   id="rwMsg"></div>
+    <div class="rw-team"  id="rwTeam"></div>
+    <button class="rw-close" id="rwClose" onclick="closeReward()"></button>
+  </div>
+</div>
+
+
+<script>
+/* ══════════════════════════
+   INJECT TEXTS FROM content.js
+══════════════════════════ */
+document.getElementById('uiTitle').textContent    = TXT_UI.title;
+document.getElementById('uiHint').textContent     = TXT_UI.hint;
+document.getElementById('bdemo').textContent      = TXT_UI.btnDemo;
+document.getElementById('uiBtnReset').textContent = TXT_UI.btnReset;
+
+document.getElementById('rwTitle').innerHTML      = TXT_REWARD.title.replace(/\n/g, '<br>');
+document.getElementById('rwTeam').textContent     = TXT_REWARD.team;
+document.getElementById('rwClose').textContent    = TXT_REWARD.btnClose;
+
+
+/* ══════════════════════════
+   BALL CURSOR
+══════════════════════════ */
+const ball = document.getElementById('ball');
+let mx = innerWidth/2, my = innerHeight/2, bx = mx, by = my;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  const hit = document.elementFromPoint(mx, my);
+  const onP = hit && (hit.classList.contains('kw') || hit.classList.contains('kb') || hit.closest?.('.piano-wrap'));
+  const onR = document.getElementById('reward').classList.contains('on');
+  ball.classList.toggle('keys',   !!onP && !onR);
+  ball.classList.toggle('result', !!onR);
+});
+document.addEventListener('mousedown', () => ball.classList.add('click'));
+document.addEventListener('mouseup',   () => ball.classList.remove('click'));
+(function loop() {
+  bx += (mx - bx) * .2; by += (my - by) * .2;
+  ball.style.left = bx + 'px'; ball.style.top = by + 'px';
+  requestAnimationFrame(loop);
+})();
+
+/* ══════════════════════════
+   AUDIO
+══════════════════════════ */
+let aC = null;
+const gC = () => { if (!aC) aC = new (window.AudioContext || window.webkitAudioContext)(); return aC; };
+const FR = {
+  C4:261.63, Cs4:277.18, D4:293.66, Ds4:311.13, E4:329.63,
+  F4:349.23, Fs4:369.99, G4:392.00, Gs4:415.30, A4:440.00, As4:466.16, B4:493.88,
+  C5:523.25, Cs5:554.37, D5:587.33, Ds5:622.25, E5:659.25
+};
+function pn(id, dur = 1, vol = .35) {
+  const ac = gC(); if (ac.state === 'suspended') ac.resume();
+  const f = FR[id]; if (!f) return;
+  const o = ac.createOscillator(), g = ac.createGain();
+  const o2 = ac.createOscillator(), g2 = ac.createGain();
+  o.type = 'triangle'; o.frequency.value = f;
+  o2.type = 'sine'; o2.frequency.value = f * 2;
+  o.connect(g); g.connect(ac.destination);
+  o2.connect(g2); g2.connect(ac.destination);
+  const t = ac.currentTime;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .01); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+  g2.gain.setValueAtTime(0, t); g2.gain.linearRampToValueAtTime(vol * .15, t + .01); g2.gain.exponentialRampToValueAtTime(.001, t + dur * .4);
+  o.start(t); o.stop(t + dur); o2.start(t); o2.stop(t + dur * .4);
+}
+
+/* ══════════════════════════
+   PIANO BUILD — AZERTY
+   Blanches : Q S D F G H J K L M
+   Noires   : Z E   T Y U   O P
+══════════════════════════ */
+const WK = [
+  {id:'C4',kb:'Q'}, {id:'D4',kb:'S'}, {id:'E4',kb:'D'}, {id:'F4',kb:'F'},
+  {id:'G4',kb:'G'}, {id:'A4',kb:'H'}, {id:'B4',kb:'J'}, {id:'C5',kb:'K'},
+  {id:'D5',kb:'L'}, {id:'E5',kb:'M'},
+];
+// ai = index of white key immediately to the LEFT of this black key
+const BK = [
+  {id:'Cs4', ai:0, kb:'Z'}, {id:'Ds4', ai:1, kb:'E'},
+  {id:'Fs4', ai:3, kb:'T'}, {id:'Gs4', ai:4, kb:'Y'}, {id:'As4', ai:5, kb:'U'},
+  {id:'Cs5', ai:7, kb:'O'}, {id:'Ds5', ai:8, kb:'P'},
+];
+
+const pianoEl = document.getElementById('piano');
+
+WK.forEach(k => {
+  const el = document.createElement('div');
+  el.className = 'kw'; el.id = 'k-' + k.id;
+  el.innerHTML = `<span class="klw">${k.kb}</span>`;
+  el.addEventListener('mousedown',  e => { e.preventDefault(); trig(k.id); });
+  el.addEventListener('touchstart', e => { e.preventDefault(); trig(k.id); }, {passive: false});
+  pianoEl.appendChild(el);
+});
+
+BK.forEach(bk => {
+  // left = white_key_index * (width + gap) + (white_key_width - half_black_width)
+  //      = bk.ai * 46 + (44 - 14) = bk.ai * 46 + 30
+  const el = document.createElement('div');
+  el.className = 'kb'; el.id = 'k-' + bk.id;
+  el.style.left = (bk.ai * 46 + 30) + 'px';
+  el.innerHTML = `<span class="klb">${bk.kb}</span>`;
+  el.addEventListener('mousedown',  e => { e.preventDefault(); trig(bk.id); });
+  el.addEventListener('touchstart', e => { e.preventDefault(); trig(bk.id); }, {passive: false});
+  pianoEl.appendChild(el);
+});
+
+const kMap = {};
+WK.forEach(k => { kMap[k.kb.toLowerCase()] = k.id; });
+BK.forEach(k => { kMap[k.kb.toLowerCase()] = k.id; });
+document.addEventListener('keydown', e => {
+  if (e.repeat) return;
+  const id = kMap[e.key.toLowerCase()];
+  if (id) trig(id);
+});
+
+/* ══════════════════════════
+   MELODY — F major, fixed-Do
+   Partition: la voix mélodique du treble clef
+══════════════════════════ */
+// Phrase 1 : Do Do Ré Do Fa Mi
+// Phrase 2 : Do Do Ré Do Sol Fa
+// Phrase 3 : Do Do Do' La Fa Mi Ré   (Do' = C5)
+// Phrase 4 : Sib Sib La Fa Sol Fa    (Sib = Bb = As4)
+const MEL = [
+  'C4','C4','D4','C4','F4','E4',       // 6
+  'C4','C4','D4','C4','G4','F4',       // 6
+  'C4','C4','C5','A4','F4','E4','D4',  // 7
+  'As4','As4','A4','F4','G4','F4',     // 6  → 25 total
+];
+
+// Timing @ ~100 BPM, 3/4
+// ♪=.3s  ♩=.6s  ♩.=.9s  𝅗𝅥=1.2s  o.=1.8s
+const DT = [
+  //  Do   Do   Ré   Do   Fa   Mi(o.)
+      0,  .30, .60, 1.20, 1.80, 2.40,
+  //  Do   Do   Ré   Do   Sol  Fa(o.)
+      4.20, 4.50, 4.80, 5.40, 6.00, 6.60,
+  //  Do   Do   Do'  La   Fa   Mi   Ré(o.)
+      8.40, 8.70, 9.00, 9.60, 10.20, 10.80, 11.40,
+  //  Sib  Sib  La   Fa   Sol  Fa
+      13.20, 13.50, 13.80, 14.40, 15.00, 15.60,
+];
+// Final note duration
+const FINAL_DUR = 2.8;
+
+/* ══════════════════════════
+   PROGRESS DOTS (25)
+══════════════════════════ */
+const progEl = document.getElementById('prog');
+MEL.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot'; d.id = 'D' + i;
+  progEl.appendChild(d);
+});
+
+/* ══════════════════════════
+   GAME STATE
+══════════════════════════ */
+let si = 0;           // sequence index (current note to play)
+let nCorrect = 0;     // correct note presses
+let nWrong   = 0;     // wrong note presses
+let demoOn   = false;
+
+function setGuide(idx) {
+  document.querySelectorAll('.kw, .kb').forEach(el => el.classList.remove('guide'));
+  if (idx >= 0 && idx < MEL.length) {
+    const el = document.getElementById('k-' + MEL[idx]);
+    if (el) el.classList.add('guide');
+  }
+}
+setGuide(0);
+
+function trig(id) {
+  if (demoOn) return;
+  pn(id);
+  press(id);
+  chk(id);
+}
+
+function press(id, ms = 150) {
+  const el = document.getElementById('k-' + id); if (!el) return;
+  el.classList.add('press');
+  setTimeout(() => el.classList.remove('press'), ms);
+}
+function glow(id, ms = 340) {
+  const el = document.getElementById('k-' + id); if (!el) return;
+  el.classList.add('lit');
+  setTimeout(() => el.classList.remove('lit'), ms);
+}
+function miss(id) {
+  // Flash the wrong key pink-red, keep guide pulsing
+  const el = document.getElementById('k-' + id); if (!el) return;
+  el.classList.remove('miss');
+  void el.offsetWidth; // reflow for re-trigger
+  el.classList.add('miss');
+  setTimeout(() => el.classList.remove('miss'), 260);
+}
+function shakeBar() {
+  const bar = document.getElementById('pbar');
+  bar.classList.remove('shake'); void bar.offsetWidth;
+  bar.classList.add('shake');
+  setTimeout(() => bar.classList.remove('shake'), 340);
+}
+
+/* ── Confettis roses — canvas-confetti sur canvas z-index 500 ── */
+let confettiCanvas = null;
+let myConfetti = null;
+function getConfetti() {
+  if (!confettiCanvas) {
+    confettiCanvas = document.createElement('canvas');
+    confettiCanvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:500;pointer-events:none;';
+    document.body.appendChild(confettiCanvas);
+    myConfetti = confetti.create(confettiCanvas, { resize: true, useWorker: false });
+  }
+  return myConfetti;
+}
+function burstConfetti() {
+  const fire = getConfetti();
+  const cfg  = { origin: { y: 0.67 }, colors: ['#E4AEAE', '#d4908e'], shapes: ['circle'], ticks: 320 };
+  fire({ ...cfg, particleCount: 50,  spread: 26,  startVelocity: 55 });
+  fire({ ...cfg, particleCount: 40,  spread: 60 });
+  fire({ ...cfg, particleCount: 70,  spread: 100, decay: 0.91, scalar: 0.8 });
+  fire({ ...cfg, particleCount: 20,  spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+  fire({ ...cfg, particleCount: 20,  spread: 120, startVelocity: 45 });
+}
+
+/* ── Confetti burst on correct note ── */
+function burst(keyId) {
+  const el = document.getElementById('k-' + keyId); if (!el) return;
+  const rect = el.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top  + rect.height * 0.2;
+  for (let i = 0; i < 10; i++) {
+    const p = document.createElement('div');
+    p.className = 'ptcl';
+    const size  = Math.random() * 11 + 5;
+    const angle = -90 + (Math.random() - .5) * 155; // upward fan
+    const speed = Math.random() * 95 + 50;
+    const rad   = angle * Math.PI / 180;
+    const tx    = (Math.cos(rad) * speed).toFixed(1);
+    const ty    = (Math.sin(rad) * speed).toFixed(1);
+    const dur   = (Math.random() * .22 + .48).toFixed(2);
+    p.style.cssText = `left:${cx}px;top:${cy}px;width:${size}px;height:${size}px;--tx:${tx}px;--ty:${ty}px;--d:${dur}s;`;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 900);
+  }
+}
+
+/* ── Sequence check — NO RESET on wrong note ── */
+function chk(id) {
+  if (id === MEL[si]) {
+    // ✓ Correct
+    nCorrect++;
+    document.getElementById('D' + si).classList.add('on');
+    glow(id);
+    burst(id);
+    si++;
+    setGuide(si);
+    if (si === MEL.length) setTimeout(showEnd, 700);
+  } else {
+    // ✗ Wrong — count it, stay on same note, shake
+    nWrong++;
+    miss(id);
+    shakeBar();
+    // Guide stays on MEL[si] — no advance
+  }
+}
+
+function cheatEnd() {
+  // Score aléatoire : nWrong entre 0 et 30 → donne ~45%–100%
+  nCorrect = 25;
+  nWrong   = Math.floor(Math.random() * 31);
+  si       = MEL.length;
+  document.querySelectorAll('.dot').forEach(d => d.classList.add('on'));
+  setGuide(-1);
+  showEnd();
+}
+
+function resetAll() {
+  si = 0; nCorrect = 0; nWrong = 0;
+  document.querySelectorAll('.dot').forEach(d => d.classList.remove('on'));
+  setGuide(0);
+}
+
+/* ══════════════════════════
+   SCORING  (shown only at end)
+══════════════════════════ */
+function calcScore() {
+  const total = nCorrect + nWrong;
+  return total === 0 ? 0 : Math.round(nCorrect / total * 100);
+}
+
+function getMsg(s) {
+  if (s === 100) return MSGS[10];
+  return MSGS[Math.min(Math.floor(s / 10), 9)];
+}
+
+/* ══════════════════════════
+   DEMO PLAYBACK
+══════════════════════════ */
+let dTos = [];
+function playDemo() {
+  if (demoOn) return;
+  demoOn = true; resetAll(); setGuide(-1);
+  const btn = document.getElementById('bdemo');
+  btn.disabled = true; btn.textContent = '♪ En cours…';
+  dTos.forEach(clearTimeout); dTos = [];
+
+  MEL.forEach((note, i) => {
+    const isLast = i === MEL.length - 1;
+    const dur = isLast
+      ? FINAL_DUR
+      : (DT[i + 1] - DT[i]) * .88; // slightly shorter than gap for articulation
+    dTos.push(setTimeout(() => {
+      pn(note, dur);
+      press(note, Math.min(dur * 750, 260));
+      glow(note,  Math.min(dur * 850, 360));
+    }, DT[i] * 1000));
+  });
+
+  const endMs = (DT[DT.length - 1] + FINAL_DUR + .5) * 1000;
+  dTos.push(setTimeout(() => {
+    demoOn = false;
+    btn.disabled = false; btn.textContent = TXT_UI.btnDemo;
+    setGuide(0);
+  }, endMs));
+}
+
+/* ══════════════════════════
+   END SCREENS
+══════════════════════════ */
+function showEnd() {
+  setGuide(-1);
+  const s   = calcScore();
+  const msg = getMsg(s);
+
+  const gif = document.getElementById('rwGif');
+  gif.src          = GIFS[Math.floor(Math.random() * GIFS.length)];
+  gif.style.display = 'block';
+  document.getElementById('rwScore').textContent = s + '%';
+  document.getElementById('rwMsg').textContent   = msg;
+
+  const rewardEl = document.getElementById('reward');
+  rewardEl.classList.remove('phase2');
+  rewardEl.classList.add('on');
+  setTimeout(() => burstConfetti(), 350);
+  setTimeout(() => burstConfetti(), 850);
+  setTimeout(() => {
+    rewardEl.classList.add('phase2');
+    if (s > 80) ['F4','A4','C5','F4'].forEach((n, i) => setTimeout(() => pn(n, 1.5, .22), i * 75));
+  }, 2500);
+}
+
+function closeReward() {
+  location.reload();
+}
+
+/* ══════════════════════════
+   RESPONSIVE PIANO SCALE
+══════════════════════════ */
+const PIANO_NATURAL_W  = 458; // 10 keys * 44px + 9 * 2px gap
+const PIANO_NATURAL_H  = 185; // bar 7px + keys 178px
+const PIANO_MARGIN_REM = 1.8; // original margin-bottom in rem
+
+function scalePiano() {
+  const wrap = document.querySelector('.piano-wrap');
+  const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const available = window.innerWidth - 32; // 16px padding chaque côté
+  const scale = Math.min(1, available / PIANO_NATURAL_W);
+  wrap.style.transform = scale < 1 ? `scale(${scale.toFixed(3)})` : '';
+  // Compenser l'espace mort créé par le scaling (transform ne reflow pas)
+  if (scale < 1) {
+    const hiddenH = PIANO_NATURAL_H * (1 - scale);
+    wrap.style.marginBottom = `${PIANO_MARGIN_REM * remPx - hiddenH}px`;
+  } else {
+    wrap.style.marginBottom = '';
+  }
+}
+scalePiano();
+window.addEventListener('resize', scalePiano);
+
+/* ══════════════════════════
+   OVERLAY ORIENTATION
+══════════════════════════ */
+const orientTip  = document.getElementById('orient-tip');
+const orientSkip = document.getElementById('otSkip');
+let dismissed = false;
+
+orientSkip.addEventListener('click', () => {
+  dismissed = true;
+  orientTip.style.display = 'none';
+});
+
+function checkOrientation() {
+  if (dismissed) return;
+  const isMobile  = window.matchMedia('(hover: none)').matches;
+  const isPortrait = window.matchMedia('(orientation: portrait)').matches;
+  orientTip.style.display = (isMobile && isPortrait) ? 'flex' : 'none';
+}
+window.addEventListener('resize', checkOrientation);
+window.addEventListener('orientationchange', checkOrientation);
+checkOrientation();
+</script>
+</body>
+</html>
