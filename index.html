@@ -26,7 +26,7 @@ body{
   transition:background .14s,width .14s,height .14s;
   will-change:left,top;
 }
-#ball.keys{background:var(--pink);width:26px;height:26px;outline:2px solid rgba(0,0,0,.2);}
+#ball.keys{background:var(--pink);width:26px;height:26px;}
 #ball.click{width:12px;height:12px;}
 
 /* ═══ LOGO ═══ */
@@ -251,15 +251,23 @@ body{
 /* (écran reveal supprimé — tout passe par #reward) */
 
 /* ═══ RESPONSIVE MOBILE ═══ */
-/* Piano : transform-origin pour le scaling JS */
 .piano-wrap{ transform-origin: center top; }
 
-/* Cacher le curseur bille et rétablir le curseur natif sur touch */
 @media (hover: none) {
   #ball { display: none; }
   body, .piano-wrap, .kw, .kb, .pill, .rw-close, .logo, button { cursor: auto; }
-  /* Kbhint inutile sur mobile */
   .kbhint { display: none; }
+  /* Autoriser le scroll vertical en cas de débordement résiduel */
+  body { overflow-y: auto; overflow-x: hidden; }
+}
+
+/* Compact en paysage mobile : titre piloté par la hauteur, marges réduites */
+@media (hover: none) and (orientation: landscape) {
+  .page  { padding: 1rem 1rem .5rem; }
+  .title { font-size: clamp(1.4rem, 6vh, 3.2rem); margin-bottom: .2rem; }
+  .hint  { margin-bottom: .7rem; }
+  .prog  { margin-bottom: .7rem; }
+  .btns  { margin-bottom: .4rem; }
 }
 
 /* Overlay portrait */
@@ -698,11 +706,29 @@ const PIANO_MARGIN_REM = 1.8; // original margin-bottom in rem
 function scalePiano() {
   const wrap = document.querySelector('.piano-wrap');
   const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize);
-  const available = window.innerWidth - 32; // 16px padding chaque côté
-  const scale = Math.min(1, available / PIANO_NATURAL_W);
-  wrap.style.transform = scale < 1 ? `scale(${scale.toFixed(3)})` : '';
-  // Compenser l'espace mort créé par le scaling (transform ne reflow pas)
-  if (scale < 1) {
+
+  // Contrainte largeur
+  const availableW = window.innerWidth - 32;
+  let scale = Math.min(1, availableW / PIANO_NATURAL_W);
+
+  // Contrainte hauteur sur mobile : mesure les éléments hors-piano
+  if (window.matchMedia('(hover: none)').matches) {
+    const page = document.querySelector('.page');
+    const ps = getComputedStyle(page);
+    let otherH = parseFloat(ps.paddingTop) + parseFloat(ps.paddingBottom);
+    ['.title', '.hint', '#prog', '.btns'].forEach(sel => {
+      const el = document.querySelector(sel);
+      if (!el) return;
+      const es = getComputedStyle(el);
+      otherH += el.offsetHeight + parseFloat(es.marginTop || 0) + parseFloat(es.marginBottom || 0);
+    });
+    const availableH = window.innerHeight - otherH;
+    scale = Math.min(scale, availableH / PIANO_NATURAL_H);
+  }
+
+  scale = Math.max(0.35, Math.min(1, scale));
+  wrap.style.transform = scale < 0.999 ? `scale(${scale.toFixed(3)})` : '';
+  if (scale < 0.999) {
     const hiddenH = PIANO_NATURAL_H * (1 - scale);
     wrap.style.marginBottom = `${PIANO_MARGIN_REM * remPx - hiddenH}px`;
   } else {
