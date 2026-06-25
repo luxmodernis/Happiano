@@ -668,6 +668,28 @@ function playDemo() {
 }
 
 /* ══════════════════════════
+   SCORE SOUND
+══════════════════════════ */
+function playScoreSound(s) {
+  if (s < 40) {
+    // Chute chromatique — wah wah waaah
+    ['As4','Gs4','Fs4','Ds4'].forEach((id, i) => {
+      setTimeout(() => pn(id, i === 3 ? 1.6 : .42, i === 3 ? .30 : .24), i * 380);
+    });
+  } else if (s < 80) {
+    // Arpège doux Do majeur
+    ['C4','E4','G4','C5'].forEach((id, i) => {
+      setTimeout(() => pn(id, i === 3 ? 1.5 : .45, .26), i * 320);
+    });
+  } else {
+    // Fanfare Fa majeur (original)
+    ['F4','A4','C5','F4'].forEach((id, i) => {
+      setTimeout(() => pn(id, 1.5, .22), i * 75);
+    });
+  }
+}
+
+/* ══════════════════════════
    END SCREENS
 ══════════════════════════ */
 function showEnd() {
@@ -684,12 +706,9 @@ function showEnd() {
   const rewardEl = document.getElementById('reward');
   rewardEl.classList.remove('phase2');
   rewardEl.classList.add('on');
-  setTimeout(() => burstConfetti(), 350);
+  setTimeout(() => { burstConfetti(); playScoreSound(s); }, 350);
   setTimeout(() => burstConfetti(), 850);
-  setTimeout(() => {
-    rewardEl.classList.add('phase2');
-    if (s > 80) ['F4','A4','C5','F4'].forEach((n, i) => setTimeout(() => pn(n, 1.5, .22), i * 75));
-  }, 2500);
+  setTimeout(() => rewardEl.classList.add('phase2'), 2500);
 }
 
 function closeReward() {
